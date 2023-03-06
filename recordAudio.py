@@ -31,7 +31,7 @@ def record(mics, savewav=False, plotting=False):
     RATE = 44100
     CHUNK = 420 # fixed chunk size
 
-    RECORD_SECONDS = 5
+    RECORD_SECONDS = 1
 
     mic1_id = mics[0]
     mic2_id = mics[1]
@@ -74,8 +74,12 @@ def record(mics, savewav=False, plotting=False):
         for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
             
             data_chirp =  wf.readframes(CHUNK)
-            if len(data_chirp):
+            if len(data_chirp)>0:
                 chirp.write(data_chirp)
+            else:
+                # Close stream 
+                chirp.stop_stream()
+                chirp.close()
 
             data_mic1 = mic1.read(CHUNK)
             numpydata_mic1 = np.frombuffer(data_mic1, dtype=np.float32)
@@ -88,10 +92,6 @@ def record(mics, savewav=False, plotting=False):
             data_mic3 = mic3.read(CHUNK)
             numpydata_mic3 = np.frombuffer(data_mic3, dtype=np.float32)
             arr_mic3.append(numpydata_mic3)
-
-        # Close stream 
-        chirp.stop_stream()
-        chirp.close()
 
         mic1.stop_stream()
         mic1.close()
@@ -146,5 +146,5 @@ if __name__ == "__main__":
     checkInputDevices()
     checkFolders()
 
-    mics = [0,1,2]
+    mics = [3,2,1]
     record(mics, savewav=True, plotting=True)
