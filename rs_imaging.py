@@ -19,6 +19,7 @@ class RS_Imager:
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
         self.pipeline.start(self.config)
 
 
@@ -29,7 +30,7 @@ class RS_Imager:
                 ./Data/RS_Images/jpg
                 ./Data/RS_Images/npy
 
-            Arg - filepath (string): the complete filepath and name of the image to be saved
+            Arg - save_array (boolean): determines if an ndarray should be saved as a .npy file as well as the .jpg
             Arg - hole_filling_mode (int): determines if and how holes are filled. Options:
                         -1  No hole filling
                         0   Fill holes from the left
@@ -57,3 +58,25 @@ class RS_Imager:
             np.save("./Data/RS_Images/npy/" + curr_time + ".npy", depth_image)
 
         return depth_image
+
+
+    def save_RGB_image(self):
+        '''
+            Purpose: Saves an RGB image using the RealSense camera. Can optionally also save the image as an ndarray.
+            Note: Assumes that these folders already exist:
+                ./Data/RS_Images/jpg-rgb
+                            
+            Returns: an ndarray corresponding to the rgb image
+        '''
+
+        frames = self.pipeline.wait_for_frames()
+        rgb_frame = frames.get_color_frame()
+        image = np.asanyarray(rgb_frame.get_data())
+
+        curr_time = time.strftime("%Y%m%d-%H%M%S")
+
+        cv2.imwrite("./Data/RS_Images/rgb-jpg/" + curr_time + ".jpg", image)
+
+        return image
+
+
