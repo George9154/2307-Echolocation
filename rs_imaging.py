@@ -1,7 +1,6 @@
 import pyrealsense2 as rs
 import cv2
 import numpy as np
-import time
 
 '''
 This file provides functions for using the Realsense camera.
@@ -13,6 +12,8 @@ Full documentation for pyrealsense2 (its kinda bad tho):
 
 class RS_Imager:
 
+    RESOLUTION = (128, 128)
+
     def __init__(self):
         # Instantiate an RS_Imager object
 
@@ -23,7 +24,7 @@ class RS_Imager:
         self.pipeline.start(self.config)
 
 
-    def save_depth_image(self, save_array=True, hole_filling_mode=1):
+    def save_depth_image(self, file_ID, save_array=True, hole_filling_mode=1):
         '''
             Purpose: Saves a depth image using the RealSense camera. Can optionally also save the image as an ndarray.
             Note: Assumes that these folders already exist:
@@ -50,17 +51,15 @@ class RS_Imager:
         depth_image = np.asanyarray(depth_frame.get_data())
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_RAINBOW)
 
-        curr_time = time.strftime("%Y%m%d-%H%M%S")
-
-        cv2.imwrite("./Data/RS_Images/jpg/" + curr_time + ".jpg", depth_colormap)
+        cv2.imwrite("./Data/RS_Images/jpg/" + file_ID + ".jpg", depth_colormap)
         
         if save_array:
-            np.save("./Data/RS_Images/npy/" + curr_time + ".npy", depth_image)
+            np.save("./Data/RS_Images/npy/" + file_ID + ".npy", depth_image)
 
         return depth_image
 
 
-    def save_RGB_image(self):
+    def save_RGB_image(self, file_ID):
         '''
             Purpose: Saves an RGB image using the RealSense camera. Can optionally also save the image as an ndarray.
             Note: Assumes that these folders already exist:
@@ -73,9 +72,7 @@ class RS_Imager:
         rgb_frame = frames.get_color_frame()
         image = np.asanyarray(rgb_frame.get_data())
 
-        curr_time = time.strftime("%Y%m%d-%H%M%S")
-
-        cv2.imwrite("./Data/RS_Images/rgb-jpg/" + curr_time + ".jpg", image)
+        cv2.imwrite("./Data/RS_Images/rgb-jpg/" + file_ID + ".jpg", image)
 
         return image
 
