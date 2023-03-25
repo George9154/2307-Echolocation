@@ -40,7 +40,14 @@ if __name__ == '__main__':
     recordAudio.checkInputDevices()
     mic_ids = [-1,-1,-1]
     for i in range(3):
-        mic_ids[i] = input("Enter Microphone {} id: ".format(i+1))
+        mic_ids[i] = int(input("Enter Microphone {} id: ".format(i+1)))
+
+    # Add microphone description for easy tracking    
+    p = pyaudio.PyAudio()
+    mic_desc = []
+    for i in range(3):
+        mic_desc.append(str("Mic " + str(i+1) + " ID: " +  str(mic_ids[i]) + " - " + p.get_device_info_by_host_api_device_index(0, i).get('name')))
+    p.terminate()
 
     # Define parameters
     chirp_path = "./chirp3ms.wav"
@@ -51,34 +58,16 @@ if __name__ == '__main__':
     saved_seconds = 0.1 # 50 ms 
     frame_shift = 100
 
-    cycles = 1
+    cycles = 10
     debug = True
-    delay_between = 0
-    wait_for_input = True
+    delay_between = 0.1
+    wait_for_input = False
 
     Imager = rs_imaging.RS_Imager()
-    file_ids = []
 
-    for i in range(cycles):
-        if wait_for_input:
-            input("Press Enter to Collect Next Sample")
+    curr_time = datetime.now().strftime("%Y%m%d-%H%M%S")
 
-        file_id = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
-
-        # Save images
-        Imager.save_depth_image(file_id)
-        Imager.save_RGB_image(file_id)
-
-        # Save audio
-        recordAudio.record(file_id, mic_ids, chirp_path, rate, chunk, channels,
-                            record_seconds, saved_seconds, frame_shift, debug)
-
-        if delay_between != 0:
-            time.sleep(delay_between)
-
-        file_ids.append(file_id)
-    
-    with open("./Data/Logs/" + file_ids[0] + ".txt", 'w') as f:
+    with open("./Data/Logs/" + curr_time + ".txt", 'w') as f:
         params = ["Chirp Path: " + str(chirp_path),
                     "Sampling Rate: " + str(rate),
                     "Chunk Size: " + str(chunk),
@@ -86,7 +75,26 @@ if __name__ == '__main__':
                     "Record Seconds: " + str(record_seconds),
                     "Saved Seconds: " + str(saved_seconds),
                     "Frame Shift: " + str(frame_shift)]
-        f.writelines(params)
+        f.writelines(s + "\n" for s in mic_desc)
+        f.writelines(s + "\n" for s in params)
         f.write('\n')
         f.write("List of file ids: \n")
-        f.writelines(file_ids)
+        
+
+        for i in range(cycles):
+            if wait_for_input:
+                input("Press Enter to Collect Next Sample")
+
+            file_id = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+            f.write(file_id + "\n")
+
+            # Save images
+            Imager.save_depth_image(file_id)
+            Imager.save_RGB_image(file_id)
+
+            # Save audio
+            recordAudio.record(file_id, mic_ids, chirp_path, rate, chunk, channels,
+                                record_seconds, saved_seconds, frame_shift, debug)
+
+            if delay_between != 0:
+                time.sleep(delay_between)
