@@ -169,3 +169,4 @@ def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
                 ax.set(xlabel='Time(ms)', ylabel='Amplitude')
 
             plt.savefig("./Data/Plots/" + file_id + ".png")
+            plt.close()

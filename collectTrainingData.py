@@ -3,6 +3,7 @@ import rs_imaging
 
 from pathlib import Path
 import time
+from datetime import datetime
 import pyaudio
 
 def checkImageFolders():
@@ -62,7 +63,7 @@ if __name__ == '__main__':
         if wait_for_input:
             input("Press Enter to Collect Next Sample")
 
-        file_id = time.strftime("%Y%m%d-%H%M%S")
+        file_id = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
 
         # Save images
         Imager.save_depth_image(file_id)
