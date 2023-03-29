@@ -50,17 +50,17 @@ if __name__ == '__main__':
     p.terminate()
 
     # Define parameters
-    chirp_path = "./chirp3ms.wav"
+    chirp_path = "./downchirp1s.wav"
     rate = 48000
     chunk = 4800
     channels = 1
-    record_seconds = 1
-    saved_seconds = 0.1 # 50 ms 
+    record_seconds = 2
+    saved_seconds = 0.05 # 50 ms 
     frame_shift = 100
 
-    cycles = 10
+    cycles = 1
     debug = True
-    delay_between = 0.1
+    delay_between = 1
     wait_for_input = False
 
     Imager = rs_imaging.RS_Imager()
