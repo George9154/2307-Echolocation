@@ -46,7 +46,7 @@ if __name__ == '__main__':
     p = pyaudio.PyAudio()
     mic_desc = []
     for i in range(3):
-        mic_desc.append(str("Mic " + str(i+1) + " ID: " +  str(mic_ids[i]) + " - " + p.get_device_info_by_host_api_device_index(0, i).get('name')))
+        mic_desc.append(str("Mic " + str(i+1) + " ID: " +  str(mic_ids[i]) + " - " + p.get_device_info_by_host_api_device_index(0, mic_ids[i]).get('name')))
     p.terminate()
 
     # Define parameters
