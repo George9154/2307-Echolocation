@@ -33,7 +33,7 @@ def checkFolders():
 #           savewav: Saves the recorded audio as wav files
 #           plotting: Saves plots of the recorded audio 
 def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
-            record_seconds, saved_seconds, frame_shift, debug):
+            record_seconds, saved_seconds, frame_shift, debug, sync_signal = True):
     
     format = pyaudio.paFloat32
 
@@ -123,21 +123,26 @@ def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
         signal_mic3 = np.ndarray.flatten(np.array(arr_mic3))
 
         # Sync based on first large amplitude event
-        trim_length = int(saved_seconds * rate)
+        if sync_signal:
+            trim_length = int(saved_seconds * rate)
 
-        sync_threshold = 0.8
+            sync_threshold = 0.8
 
-        mic1_max = np.max(signal_mic1)
-        mic1_trim_ind = np.argmax(signal_mic1 > mic1_max * sync_threshold)
-        signal_mic1 = signal_mic1[mic1_trim_ind-frame_shift:mic1_trim_ind-frame_shift+trim_length] 
-        
-        mic2_max = np.max(signal_mic2)
-        mic2_trim_ind = np.argmax(signal_mic2 > mic2_max * sync_threshold) 
-        signal_mic2 = signal_mic2[mic2_trim_ind-frame_shift:mic2_trim_ind-frame_shift+trim_length] 
-        
-        mic3_max = np.max(signal_mic3)
-        mic3_trim_ind = np.argmax(signal_mic3 > mic3_max * sync_threshold)
-        signal_mic3 = signal_mic3[mic3_trim_ind-frame_shift:mic3_trim_ind-frame_shift+trim_length] 
+            mic1_max = np.max(signal_mic1)
+            mic1_trim_ind = np.argmax(signal_mic1 > mic1_max * sync_threshold)
+            signal_mic1 = signal_mic1[mic1_trim_ind-frame_shift:mic1_trim_ind-frame_shift+trim_length] 
+            
+            mic2_max = np.max(signal_mic2)
+            mic2_trim_ind = np.argmax(signal_mic2 > mic2_max * sync_threshold) 
+            signal_mic2 = signal_mic2[mic2_trim_ind-frame_shift:mic2_trim_ind-frame_shift+trim_length] 
+            
+            mic3_max = np.max(signal_mic3)
+            mic3_trim_ind = np.argmax(signal_mic3 > mic3_max * sync_threshold)
+            signal_mic3 = signal_mic3[mic3_trim_ind-frame_shift:mic3_trim_ind-frame_shift+trim_length] 
+
+            plot_duration = saved_seconds
+        else:
+            plot_duration = record_seconds
 
         # Save data
         npy_arr = np.stack([signal_mic1, signal_mic2, signal_mic3])
@@ -154,7 +159,7 @@ def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
             write(wav_dir + "mic3.wav", rate, signal_mic3)
 
             # plot data
-            t = np.linspace(0, saved_seconds*1000, num=np.shape(signal_mic1)[0], endpoint=False)
+            t = np.linspace(0, plot_duration*1000, num=np.shape(signal_mic1)[0], endpoint=False)
             fig, axs = plt.subplots(3)
             fig.suptitle('Recorded Wave')
             axs[0].plot(t, signal_mic1)

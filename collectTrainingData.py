@@ -17,6 +17,7 @@ def checkImageFolders():
 '''
 Parameter List
     Record Audio Inputs       
+        chirp_path:     file path of chirp file to play
         rate:           sampling rate of recording
         chunk:          buffer size for recording use
         channels:       number of channels - should always be 1, we are recording in mono
@@ -26,6 +27,7 @@ Parameter List
 
     Debug/Cycle Control:
         debug:          gives debug outputs if true
+        sync_signal:    set to False to keep full recording for debugging
         cycles:         number of training samples to obtain
         delay_between:  delay between training cycles in seconds
         wait_for_input: waits for keyboard input if true between cycles
@@ -60,6 +62,7 @@ if __name__ == '__main__':
 
     cycles = 1
     debug = True
+    sync_signal = False
     delay_between = 1
     wait_for_input = False
 
@@ -94,7 +97,7 @@ if __name__ == '__main__':
 
             # Save audio
             recordAudio.record(file_id, mic_ids, chirp_path, rate, chunk, channels,
-                                record_seconds, saved_seconds, frame_shift, debug)
+                                record_seconds, saved_seconds, frame_shift, debug, sync_signal)
 
             if delay_between != 0:
                 time.sleep(delay_between)
