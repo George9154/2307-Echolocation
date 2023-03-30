@@ -23,7 +23,7 @@ class RS_Imager:
         self.pipeline.start(self.config)
 
 
-    def save_depth_image(self, file_ID, save_array=True, debug_mode=False, hole_filling_mode=1):
+    def save_depth_image(self, file_ID, save_array=True, debug_mode=False, hole_filling_mode=-1):
         '''
             Purpose: Saves a depth image using the RealSense camera. Can optionally also save the image as an ndarray.
             Note: Assumes that these folders already exist:
