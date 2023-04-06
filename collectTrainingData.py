@@ -61,8 +61,8 @@ if __name__ == '__main__':
     frame_shift = 100
 
     cycles = 200
-    debug = True
-    sync_signal = False
+    debug = False
+    sync_signal = True
     delay_between = 0.5
     wait_for_input = False
 
