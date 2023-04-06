@@ -54,17 +54,18 @@ class RS_Imager:
 
         low_res_image = cv2.resize(full_res_image, RESOLUTION)
 
-        cv2.imwrite("./Data/RS_Images/jpg/" + file_ID + ".jpg", low_res_image)
+        if file_ID != None:
+            cv2.imwrite("./Data/RS_Images/jpg/" + file_ID + ".jpg", low_res_image)
 
-        if debug_mode:
-            cv2.imwrite("./Data/RS_Images/jpg/" + file_ID + "-full_res.jpg", full_res_image)
-        
-        if save_array:
-            low_res_array = cv2.resize(full_res_array, RESOLUTION)
-            np.save("./Data/RS_Images/npy/" + file_ID + ".npy", low_res_array)
-            
             if debug_mode:
-                np.save("./Data/RS_Images/npy/" + file_ID + "-full_res.npy", full_res_array)
+                cv2.imwrite("./Data/RS_Images/jpg/" + file_ID + "-full_res.jpg", full_res_image)
+            
+            if save_array:
+                low_res_array = cv2.resize(full_res_array, RESOLUTION)
+                np.save("./Data/RS_Images/npy/" + file_ID + ".npy", low_res_array)
+                
+                if debug_mode:
+                    np.save("./Data/RS_Images/npy/" + file_ID + "-full_res.npy", full_res_array)
 
         return full_res_array
 
@@ -84,6 +85,7 @@ class RS_Imager:
         rgb_frame = frames.get_color_frame()
         image = np.asanyarray(rgb_frame.get_data())
 
-        cv2.imwrite("./Data/RS_Images/rgb-jpg/" + file_ID + ".jpg", image)
+        if file_ID != None:
+            cv2.imwrite("./Data/RS_Images/rgb-jpg/" + file_ID + ".jpg", image)
 
         return image

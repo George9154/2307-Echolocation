@@ -33,7 +33,7 @@ def checkFolders():
 #           savewav: Saves the recorded audio as wav files
 #           plotting: Saves plots of the recorded audio 
 def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
-            record_seconds, saved_seconds, frame_shift, debug, sync_signal = True):
+            record_seconds, saved_seconds, frame_shift, debug, sync_signal = True, saveData = True):
     
     format = pyaudio.paFloat32
 
@@ -144,34 +144,37 @@ def record(file_id, mic_ids, chirp_path, rate, chunk, channels,
         else:
             plot_duration = record_seconds
 
-        # Save data
         npy_arr = np.stack([signal_mic1, signal_mic2, signal_mic3])
         
-        nparr_str = "./Data/npy/" + file_id + "-arr.npy"
-        np.save(nparr_str, npy_arr)
+        # Save data (if applicable)
+        if saveData:
+            nparr_str = "./Data/npy/" + file_id + "-arr.npy"
+            np.save(nparr_str, npy_arr)
 
-        if debug==True:
-            wav_dir = "./Data/wav/" + file_id + "/"
-            Path(wav_dir).mkdir(parents=True, exist_ok=True)
+            if debug==True:
+                wav_dir = "./Data/wav/" + file_id + "/"
+                Path(wav_dir).mkdir(parents=True, exist_ok=True)
 
-            write(wav_dir + "mic1.wav", rate, signal_mic1)
-            write(wav_dir + "mic2.wav", rate, signal_mic2)
-            write(wav_dir + "mic3.wav", rate, signal_mic3)
+                write(wav_dir + "mic1.wav", rate, signal_mic1)
+                write(wav_dir + "mic2.wav", rate, signal_mic2)
+                write(wav_dir + "mic3.wav", rate, signal_mic3)
 
-            # plot data
-            t = np.linspace(0, plot_duration*1000, num=np.shape(signal_mic1)[0], endpoint=False)
-            fig, axs = plt.subplots(3)
-            fig.suptitle('Recorded Wave')
-            axs[0].plot(t, signal_mic1)
-            axs[1].plot(t, signal_mic2)
-            axs[2].plot(t, signal_mic3)
+                # plot data
+                t = np.linspace(0, plot_duration*1000, num=np.shape(signal_mic1)[0], endpoint=False)
+                fig, axs = plt.subplots(3)
+                fig.suptitle('Recorded Wave')
+                axs[0].plot(t, signal_mic1)
+                axs[1].plot(t, signal_mic2)
+                axs[2].plot(t, signal_mic3)
 
-            axs[0].set_title("Mic1")
-            axs[1].set_title("Mic2")
-            axs[2].set_title("Mic3")
+                axs[0].set_title("Mic1")
+                axs[1].set_title("Mic2")
+                axs[2].set_title("Mic3")
 
-            for ax in axs.flat:
-                ax.set(xlabel='Time(ms)', ylabel='Amplitude')
+                for ax in axs.flat:
+                    ax.set(xlabel='Time(ms)', ylabel='Amplitude')
 
-            plt.savefig("./Data/Plots/" + file_id + ".png")
-            plt.close()
+                plt.savefig("./Data/Plots/" + file_id + ".png")
+                plt.close()
+            
+    return npy_arr

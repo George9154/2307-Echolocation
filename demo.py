@@ -1,7 +1,8 @@
 '''
 Code to demonstrate producing an image from sound
+Note: Press q to shutdown.
 
-Created 2023-04-06 by Jamen (but copying lots of George's code)
+Created 2023-04-06
 
 Outline: 
     0. Set params
@@ -22,9 +23,9 @@ import numpy as np
 import torch
 from model import WaveformNet
 import matplotlib.pyplot as plt
+import time
 
 print("Done imports")
-
 
 if __name__ == '__main__':
 
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     rate = 48000
     chunk = 4800
     channels = 1
-    record_seconds = 1
+    record_seconds = 0.5
     saved_seconds = 0.05 # 50 ms
     frame_shift = 100
 
@@ -57,51 +58,53 @@ if __name__ == '__main__':
     sync_signal = True
     delay_between = 0.2
     wait_for_input = False
-    capture_RGB_image = False
-    capture_depth_image = False
+    show_RGB_frames = False
+    show_depth_frames = False
+    resolution = (512, 512)
     
-    # Get the audio signals
+    # fig, ax = plt.subplots()
+    # plt.show(block=False)
+    # time.sleep(10)
     
-    
-    audioArray = recordAudio.record(None, mic_ids, chirp_path, rate, chunk, channels,
-                                record_seconds, saved_seconds, frame_shift, debug, sync_signal, saveData = False)
-
-    print("Captured audio signals")
-    
-    # ML stuff
-    model = WaveformNet("direct")
-    model.load_state_dict(torch.load(model_path))
-
-    model.eval()
-
-    with torch.no_grad():
-        x = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[0, :],axis=0),axis=0), axis=0)
-        y = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[1, :],axis=0),axis=0), axis=0)
-        z = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[2, :],axis=0),axis=0), axis=0)
-        # x = torch.from_numpy(x)
-        # y = torch.from_numpy(y)
-        # z = torch.from_numpy(z)
-        print(x.shape)
-        w = model.forward(torch.from_numpy(x), torch.from_numpy(y), torch.from_numpy(z)).detach().numpy()
-    
-    print(type(w))
+    while(True):
+        # Get the audio signals
+        audioArray = recordAudio.record(None, mic_ids, chirp_path, rate, chunk, channels,
+                                    record_seconds, saved_seconds, frame_shift, debug, sync_signal, saveData = False)
         
-    plt.imshow(w[0, 0, :, :], "gray")
-    plt.show()
+        # ML stuff
+        model = WaveformNet("direct")
+        model.load_state_dict(torch.load(model_path))
 
-    cv2.imshow("Predicted Image", w[0, 0, :, :])
-    
-    # If applicable, capture and displey depth and RGB images
-    if capture_RGB_image or capture_depth_image:
-        Imager = rs_imaging.RS_Imager()
+        model.eval()
+
+        with torch.no_grad():
+            x = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[0, :],axis=0),axis=0), axis=0)
+            y = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[1, :],axis=0),axis=0), axis=0)
+            z = np.expand_dims(np.expand_dims(np.expand_dims(audioArray[2, :],axis=0),axis=0), axis=0)
+            w = model.forward(torch.from_numpy(x), torch.from_numpy(y), torch.from_numpy(z)).detach().numpy()
+            
+        # ax.imshow(w[0, 0, :, :], "gray")
+        # plt.show(block=False)
+        # time.sleep(3)
+        predicted_frame = cv2.resize(w[0, 0, :, :], resolution)
+
+        cv2.imshow("Predicted Image - press \'q\' to shutdown", predicted_frame)
         
-        if capture_depth_image:
-            depth_array = Imager.save_depth_image(file_ID=None)
-            depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_array, alpha=0.03), cv2.COLORMAP_RAINBOW)
-            cv2.imshow("Depth Image", depth_image)
+        # If applicable, capture and displey depth and RGB images
+        if show_RGB_frames or show_depth_frames:
+            Imager = rs_imaging.RS_Imager()
             
-        if capture_RGB_image:
-            rgb_image = Imager.save_RGB_image(file_ID=None)
-            cv2.imshow("RGB Image", rgb_image)
-            
-    cv2.waitKey()
+            if show_depth_frames:
+                depth_array = Imager.save_depth_image(file_ID=None)
+                depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_array, alpha=0.03), cv2.COLORMAP_RAINBOW)
+                cv2.imshow("Depth Image", depth_image)
+                
+            if show_RGB_frames:
+                rgb_image = Imager.save_RGB_image(file_ID=None)
+                cv2.imshow("RGB Image", rgb_image)
+    
+        if cv2.waitKey(1) == ord('q'):
+            break
+                
+    cv2.destroyAllWindows()
+    
